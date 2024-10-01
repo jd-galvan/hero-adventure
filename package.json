@@ -1,0 +1,19 @@
+{
+  "name": "hero-adventure",
+  "version": "1.0.0",
+  "description": "A Three.js game devloped for Compuer Graphics (UPV)",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx vite",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jose Daniel Galvan",
+  "license": "ISC",
+  "dependencies": {
+    "simplex-noise": "^3.0.1",
+    "three": "^0.140.2"
+  },
+  "devDependencies": {
+    "vite": "^5.4.7"
+  }
+}
