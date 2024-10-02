@@ -9,9 +9,12 @@ scene.background = new THREE.Color(0xa8def0);
 
 // CAMERA
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.y = 2;
-camera.position.x = 0;
-camera.position.z = 3;
+
+const cameraTop = new THREE.OrthographicCamera(-50, 50, 50, -50, 1, 1000);
+cameraTop.position.set(0, 500, 0);
+cameraTop.lookAt(0, 0, 0);
+cameraTop.up.set(0, 0, 1);
+cameraTop.updateProjectionMatrix();
 
 // RENDERER
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -24,7 +27,7 @@ const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true
 // orbitControls.minDistance = 3
 // orbitControls.maxDistance = 35
-orbitControls.maxPolarAngle = Math.PI / 2 - 0.05
+// orbitControls.maxPolarAngle = Math.PI / 2 - 0.05
 orbitControls.update();
 
 // LIGHTS
@@ -40,8 +43,6 @@ new GLTFLoader().load('models/Soldier.glb', function (gltf) {
   model.traverse(function (object) {
     if (object.isMesh) object.castShadow = true;
   });
-  // Initial position
-  // model.position.z = 67
   scene.add(model);
 
   const gltfAnimations = gltf.animations;

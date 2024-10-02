@@ -35,6 +35,10 @@ export class CharacterControls {
     orbitControl, camera,
     currentAction) {
     this.model = model
+    model.position.x = -150
+    model.position.z = -150
+
+    model.rotation.y = -2.3
     this.mixer = mixer
     this.animationsMap = animationsMap
     this.currentAction = currentAction
@@ -45,6 +49,9 @@ export class CharacterControls {
     })
     this.orbitControl = orbitControl
     this.camera = camera
+    this.camera.position.x = this.model.position.x - 5
+    this.camera.position.z = this.model.position.z - 5
+    this.camera.position.y = this.model.position.y + 2
     this.#updateCameraTarget(0, 0)
   }
 
@@ -115,6 +122,9 @@ export class CharacterControls {
     this.cameraTarget.x = this.model.position.x
     this.cameraTarget.y = this.model.position.y + 1
     this.cameraTarget.z = this.model.position.z
+
+    console.log()
+
     this.orbitControl.target = this.cameraTarget
   }
 
