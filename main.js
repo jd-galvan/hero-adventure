@@ -38,7 +38,7 @@ function loadScene() {
   scene.background = new THREE.Color(0xa8def0);
 
   // Character
-  new GLTFLoader().load('models/mainCharacter.glb', function (gltf) {
+  new GLTFLoader().load('./models/mainCharacter.glb', function (gltf) {
     const model = gltf.scene;
     model.traverse(function (object) {
       if (object.isMesh) {
