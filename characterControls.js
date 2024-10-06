@@ -1,10 +1,13 @@
 import * as THREE from 'three'
-export const UP = 'arrowup'
-export const LEFT = 'arrowleft'
-export const DOWN = 'arrowdown'
-export const RIGHT = 'arrowright'
-export const SHIFT = 'shift'
-export const DIRECTIONS = [UP, LEFT, DOWN, RIGHT]
+const UP = 'arrowup'
+const LEFT = 'arrowleft'
+const DOWN = 'arrowdown'
+const RIGHT = 'arrowright'
+const SHIFT = 'shift'
+const W = 'w'
+const S = 'swim'
+const DIRECTIONS = [UP, LEFT, DOWN, RIGHT]
+const ACTIONS = [W, S]
 
 
 export class CharacterControls {
@@ -14,6 +17,7 @@ export class CharacterControls {
   animationsMap = new Map() // Walk, Run, Idle
   orbitControl
   camera
+  cameraTop
 
   // state
   toggleRun = false
@@ -33,25 +37,29 @@ export class CharacterControls {
   constructor(model,
     mixer, animationsMap,
     orbitControl, camera,
-    currentAction) {
+    cameraTop, currentAction) {
     this.model = model
-    model.position.x = -150
-    model.position.z = -150
+    model.position.x = -155
+    model.position.z = -155
 
-    model.rotation.y = -2.3
+    model.rotation.y = -2.8
     this.mixer = mixer
     this.animationsMap = animationsMap
     this.currentAction = currentAction
     this.animationsMap.forEach((value, key) => {
       if (key == currentAction) {
+        console.log("ACTION", key)
         value.play()
       }
     })
     this.orbitControl = orbitControl
     this.camera = camera
-    this.camera.position.x = this.model.position.x - 5
-    this.camera.position.z = this.model.position.z - 5
+    // this.resetCameraTarget()
+    this.camera.position.x = this.model.position.x - 3
+    this.camera.position.z = this.model.position.z - 3
     this.camera.position.y = this.model.position.y + 2
+    // this.cameraTop = cameraTop
+    // this.cameraTop.position.y = 300
     this.#updateCameraTarget(0, 0)
   }
 
@@ -71,6 +79,19 @@ export class CharacterControls {
       play = 'Idle'
     }
 
+    const actionPressed = ACTIONS.find(key => keysPressed[key] == true)
+
+    switch (actionPressed) {
+      case W:
+        play = 'Jump'
+        break;
+      case S:
+        play = 'Swim'
+        break;
+      default:
+        break;
+    }
+
     if (this.currentAction != play) {
       const toPlay = this.animationsMap.get(play)
       const current = this.animationsMap.get(this.currentAction)
@@ -83,7 +104,8 @@ export class CharacterControls {
 
     this.mixer.update(delta)
 
-    if (this.currentAction == 'Run' || this.currentAction == 'Walk') {
+    // if (this.currentAction == 'Run' || this.currentAction == 'Walk') {
+    if (directionPressed) {
       // calculate towards camera direction
       var angleYCameraDirection = Math.atan2(
         (this.camera.position.x - this.model.position.x),
@@ -102,7 +124,7 @@ export class CharacterControls {
       this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset)
 
       // run/walk velocity
-      const velocity = this.currentAction == 'Run' ? this.runVelocity : this.walkVelocity
+      const velocity = this.toggleRun ? this.runVelocity : this.walkVelocity
 
       // move model & camera
       const moveX = this.walkDirection.x * velocity * delta
@@ -123,35 +145,32 @@ export class CharacterControls {
     this.cameraTarget.y = this.model.position.y + 1
     this.cameraTarget.z = this.model.position.z
 
-    console.log()
-
     this.orbitControl.target = this.cameraTarget
   }
 
   directionOffset(keysPressed) {
-    console.log(keysPressed)
-    var directionOffset = 0 // w
+    var directionOffset = 0
 
     if (keysPressed[UP]) {
       if (keysPressed[LEFT]) {
-        directionOffset = Math.PI / 4 // w+a
+        directionOffset = Math.PI / 4
       } else if (keysPressed[RIGHT]) {
-        directionOffset = - Math.PI / 4 // w+d
+        directionOffset = - Math.PI / 4
       }
     } else if (keysPressed[DOWN]) {
       if (keysPressed[LEFT]) {
-        directionOffset = Math.PI / 4 + Math.PI / 2 // s+a
+        directionOffset = Math.PI / 4 + Math.PI / 2
       } else if (keysPressed[RIGHT]) {
-        directionOffset = -Math.PI / 4 - Math.PI / 2 // s+d
+        directionOffset = -Math.PI / 4 - Math.PI / 2
       } else {
-        directionOffset = Math.PI // s
+        console.log('DOWN')
+        directionOffset = Math.PI
       }
     } else if (keysPressed[LEFT]) {
-      directionOffset = Math.PI / 2 // a
+      directionOffset = Math.PI / 2
     } else if (keysPressed[RIGHT]) {
-      directionOffset = - Math.PI / 2 // d
+      directionOffset = - Math.PI / 2
     }
-
     return directionOffset
   }
 }
