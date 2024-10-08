@@ -12,6 +12,7 @@
   "author": "Jose Daniel Galvan",
   "license": "ISC",
   "dependencies": {
+    "cannon-es": "^0.20.0",
     "simplex-noise": "^3.0.1",
     "three": "^0.140.2"
   },

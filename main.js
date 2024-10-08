@@ -232,7 +232,7 @@ function generateFloor() {
       transparent: true,
       opacity: 0.5
     }));
-  waterSurface.position.y = -3;
+  waterSurface.position.y = -2;
   waterSurface.rotation.x = Math.PI / 2;
 
   const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
