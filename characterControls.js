@@ -5,9 +5,11 @@ const DOWN = 'arrowdown'
 const RIGHT = 'arrowright'
 const SHIFT = 'shift'
 const W = 'w'
-const S = 'swim'
+const E = 'e'
 const DIRECTIONS = [UP, LEFT, DOWN, RIGHT]
-const ACTIONS = [W, S]
+const ACTIONS = [W, E]
+
+const SURFACES = ["land", "water"]
 
 
 export class CharacterControls {
@@ -22,6 +24,7 @@ export class CharacterControls {
   // state
   toggleRun = false
   currentAction
+  currentSurface
 
   // temporary data
   walkDirection = new THREE.Vector3()
@@ -41,42 +44,53 @@ export class CharacterControls {
     this.model = model
     model.position.x = -155
     model.position.z = -155
+    // model.position.y = -4.3 // For swimming
 
-    model.rotation.y = -2.8
+    model.rotation.y = -2.2
     this.mixer = mixer
     this.animationsMap = animationsMap
     this.currentAction = currentAction
     this.animationsMap.forEach((value, key) => {
       if (key == currentAction) {
-        console.log("ACTION", key)
         value.play()
       }
     })
     this.orbitControl = orbitControl
     this.camera = camera
-    // this.resetCameraTarget()
+
     this.camera.position.x = this.model.position.x - 3
     this.camera.position.z = this.model.position.z - 3
     this.camera.position.y = this.model.position.y + 2
-    // this.cameraTop = cameraTop
-    // this.cameraTop.position.y = 300
     this.#updateCameraTarget(0, 0)
+    this.currentSurface = "land"
   }
 
   updateRunToggle(mustRun) {
     this.toggleRun = mustRun
   }
 
+  updateCurrentSurface() {
+    if (this.currentSurface == "land") {
+      this.currentSurface = "water"
+      this.model.position.y = -4.3
+    } else {
+      this.currentSurface = "land"
+      this.model.position.y = 0
+    }
+  }
+
   update(delta, keysPressed) {
     const directionPressed = DIRECTIONS.some(key => keysPressed[key] == true)
 
     var play = '';
-    if (directionPressed && this.toggleRun) {
+    if (directionPressed && this.toggleRun && this.currentSurface == "land") {
       play = 'Run'
-    } else if (directionPressed) {
+    } else if (directionPressed && this.currentSurface == "land") {
       play = 'Walk'
+    } else if (this.currentSurface == "land") {
+      play = "Idle"
     } else {
-      play = 'Idle'
+      play = "Swim"
     }
 
     const actionPressed = ACTIONS.find(key => keysPressed[key] == true)
@@ -84,9 +98,6 @@ export class CharacterControls {
     switch (actionPressed) {
       case W:
         play = 'Jump'
-        break;
-      case S:
-        play = 'Swim'
         break;
       default:
         break;
@@ -123,8 +134,9 @@ export class CharacterControls {
       this.walkDirection.normalize()
       this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset)
 
+      this.camera.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
       // run/walk velocity
-      const velocity = this.toggleRun ? this.runVelocity : this.walkVelocity
+      const velocity = this.toggleRun && this.currentSurface == "land" ? this.runVelocity : this.walkVelocity
 
       // move model & camera
       const moveX = this.walkDirection.x * velocity * delta
@@ -147,6 +159,23 @@ export class CharacterControls {
 
     this.orbitControl.target = this.cameraTarget
   }
+
+  resetCameraPosition() {
+    const idealOffset = new THREE.Vector3(0, 2, 5); // Ajusta la posición detrás y por encima del personaje
+    idealOffset.applyQuaternion(this.model.quaternion); // Rotar la cámara junto con el personaje
+    idealOffset.add(this.model.position); // Ajustar la posición final
+
+    // Suavizado para el seguimiento de la cámara
+    this.camera.position.lerp(idealOffset, 0.9);
+
+    // Actualizar el objetivo de la cámara (mirar al personaje)
+    const lookAt = new THREE.Vector3(0, 1, 0); // Posición a la que debe mirar la cámara
+    lookAt.applyQuaternion(this.model.quaternion);
+    lookAt.add(this.model.position);
+
+    this.camera.lookAt(lookAt);
+  }
+
 
   directionOffset(keysPressed) {
     var directionOffset = 0

@@ -2,7 +2,6 @@ import { CharacterControls } from './characterControls';
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 var scene, camera, cameraTop, renderer, orbitControls, characterControls;
 const keysPressed = {}
@@ -28,8 +27,11 @@ function init() {
   // OrbitControls
   orbitControls = new OrbitControls(camera, renderer.domElement);
   orbitControls.enableDamping = true
+  orbitControls.enableZoom = false
+  orbitControls.enablePan = false
   orbitControls.minPolarAngle = Math.PI / 4
-  orbitControls.update();
+  orbitControls.maxPolarAngle = Math.PI / 2;
+
 
   document.body.appendChild(renderer.domElement);
 }
@@ -38,7 +40,7 @@ function loadScene() {
   scene.background = new THREE.Color(0xa8def0);
 
   // Character
-  new GLTFLoader().load('https://lrkhaghcqdkei563.public.blob.vercel-storage.com/models/mainCharacter-EOP1SobbDaeZBdhwHKzBo1DVtvQCrp.glb', function (gltf) {
+  new GLTFLoader().load(import.meta.env.VITE_MODEL_PATH, function (gltf) {
     const model = gltf.scene;
     model.traverse(function (object) {
       if (object.isMesh) {
@@ -75,6 +77,13 @@ function loadScene() {
     (keysPressed)[event.key.toLowerCase()] = true
   }, false);
   document.addEventListener('keyup', (event) => {
+    console.log(event)
+    if (event.code == 'KeyE') {
+      characterControls.updateCurrentSurface()
+    }
+    if (event.key == ' ') {
+      characterControls.resetCameraPosition()
+    }
     if (event.key == 'Shift') {
       characterControls.updateRunToggle(false)
     }
@@ -149,27 +158,27 @@ function generateFloor() {
 
 
   const terrainMatrix = [
-    [0, 0, 0, 0, BUSH, 0, BUSH, 0, 0, 0, 0, BUSH, 0, BUSH, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, BUSH, 0, BUSH, 0, 0, MOUNTAIN, MOUNTAIN, 0, BUSH, 0, 0, 0, LAKE, LAKE, LAKE, 0, 0, 0],
-    [0, 0, HILL, HILL, HILL, HILL, 0, 0, 0, BUSH, 0, 0, 0, 0, 0, LAKE, LAKE, LAKE, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, BUSH, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, MOUNTAIN, MOUNTAIN, MOUNTAIN, 0, BUSH, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, MOUNTAIN, MOUNTAIN, MOUNTAIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, MOUNTAIN, MOUNTAIN, MOUNTAIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, LAKE, LAKE, LAKE, LAKE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, LAKE, LAKE, LAKE, LAKE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, 0, 0, LAKE, LAKE, LAKE, LAKE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, 0, 0, LAKE, LAKE, LAKE, LAKE, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [LAND_FLOOR, SNOW_MOUNTAIN, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, SNOW_MOUNTAIN, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, 0, BUSH, 0, 0, BUSH, 0, MOUNTAIN, MOUNTAIN, MOUNTAIN, 0, BUSH, 0, BUSH],
-    [LAND_FLOOR, SNOW_MOUNTAIN, SNOW_MOUNTAIN, SNOW_MOUNTAIN, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, 0, 0, 0, 0, 0, MOUNTAIN, 0, 0, 0, 0, 0, 0, 0],
-    [LAND_FLOOR, SNOW_MOUNTAIN, SNOW_MOUNTAIN, SNOW_MOUNTAIN, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, 0, 0, 0, 0, 0, 0, 0, 0, MOUNTAIN, MOUNTAIN, 0, 0, 0],
+    [GRASS, GRASS, GRASS, GRASS, BUSH, GRASS, BUSH, GRASS, GRASS, GRASS, GRASS, BUSH, GRASS, BUSH, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [GRASS, GRASS, GRASS, BUSH, GRASS, BUSH, GRASS, GRASS, MOUNTAIN, MOUNTAIN, GRASS, BUSH, GRASS, GRASS, GRASS, LAKE, LAKE, LAKE, GRASS, GRASS, GRASS],
+    [GRASS, GRASS, HILL, HILL, HILL, HILL, GRASS, GRASS, GRASS, BUSH, GRASS, GRASS, GRASS, GRASS, GRASS, LAKE, LAKE, LAKE, GRASS, GRASS, GRASS],
+    [GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, BUSH, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [GRASS, GRASS, MOUNTAIN, MOUNTAIN, MOUNTAIN, GRASS, BUSH, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [GRASS, GRASS, MOUNTAIN, MOUNTAIN, MOUNTAIN, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [GRASS, GRASS, MOUNTAIN, MOUNTAIN, MOUNTAIN, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, LAKE, LAKE, GRASS],
+    [GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, LAKE, LAKE, LAKE, GRASS],
+    [GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, LAKE, LAKE, LAKE, GRASS, GRASS],
+    [GRASS, GRASS, GRASS, GRASS, LAKE, LAKE, LAKE, LAKE, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, LAKE, LAKE, LAKE, LAKE, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, GRASS, GRASS, LAKE, LAKE, LAKE, LAKE, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, GRASS, GRASS, LAKE, LAKE, LAKE, LAKE, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [LAND_FLOOR, SNOW_MOUNTAIN, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, SNOW_MOUNTAIN, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, GRASS, BUSH, GRASS, GRASS, BUSH, GRASS, MOUNTAIN, MOUNTAIN, MOUNTAIN, GRASS, BUSH, GRASS, BUSH],
+    [LAND_FLOOR, SNOW_MOUNTAIN, SNOW_MOUNTAIN, SNOW_MOUNTAIN, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, GRASS, GRASS, GRASS, GRASS, GRASS, MOUNTAIN, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS],
+    [LAND_FLOOR, SNOW_MOUNTAIN, SNOW_MOUNTAIN, SNOW_MOUNTAIN, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, LAND_FLOOR, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, GRASS, MOUNTAIN, MOUNTAIN, GRASS, GRASS, GRASS],
   ]
 
   const width = 320;
@@ -216,7 +225,13 @@ function generateFloor() {
   // Material con colores de vértices
   const terrainMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
 
-  const waterSurface = new THREE.Mesh(new THREE.PlaneGeometry(320, 320), new THREE.MeshBasicMaterial({ color: 0x7DE6FF, side: THREE.DoubleSide }));
+  const waterSurface = new THREE.Mesh(new THREE.PlaneGeometry(320, 320),
+    new THREE.MeshBasicMaterial({
+      color: 0x7DE6FF,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.5
+    }));
   waterSurface.position.y = -3;
   waterSurface.rotation.x = Math.PI / 2;
 
