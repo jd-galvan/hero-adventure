@@ -47,7 +47,7 @@ export class Hero {
   }
 
   constructor(orbitControl, camera, scene, physicWorld) {
-    new GLTFLoader().loadAsync(import.meta.env.VITE_MODEL_PATH)
+    new GLTFLoader().loadAsync("/models/mainCharacter.glb")
       .then((gltf) => {
         this.model = gltf.scene;
         this.model.traverse((object) => {
