@@ -42,6 +42,7 @@ export class CharacterControls {
   fadeDuration = 0.2
   runVelocity = 5
   walkVelocity = 2
+  waterLevel = -1;
 
   constructor(model,
     mixer, animationsMap,
@@ -77,13 +78,6 @@ export class CharacterControls {
     this.camera.position.y = this.model.position.y + 2
     this.#updateCameraTarget(0, 0)
     this.currentSurface = "land"
-
-    this.characterBody.addEventListener('collide', (event) => {
-      const collidedBody = event.body;
-      console.log('Colisión con:', collidedBody);
-
-      // Lógica adicional según el objeto con el que colisionó
-    });
   }
 
   updateRunToggle(mustRun) {
@@ -120,6 +114,8 @@ export class CharacterControls {
       case W:
         play = 'Jump'
         break;
+      case E:
+        play = "Fight"
       default:
         break;
     }
@@ -171,6 +167,20 @@ export class CharacterControls {
       this.characterBody.velocity.x = 0;
       this.characterBody.velocity.z = 0;
     }
+
+    if (this.characterBody.position.y < this.waterLevel) {
+      if (this.currentSurface !== "water") {
+        console.log("El personaje ha entrado en el agua");
+        this.currentSurface = "water";
+      }
+    } else {
+      if (this.currentSurface !== "land") {
+        console.log("El personaje ha salido del agua");
+        this.currentSurface = "land";
+      }
+      this.characterBody.linearDamping = 0.1; // Restablece la resistencia en tierra
+    }
+
     // Sincronizar el modelo con el cuerpo físico
     this.model.position.copy(this.characterBody.position);
     this.model.position.y -= 1;
@@ -233,11 +243,15 @@ export class CharacterControls {
     }
     return directionOffset
   }
+
+  jump() {
+    if (this.currentAction != 'Jump' && this.currentAction != "Swim" && this.characterBody.position.y <= 1) this.characterBody.velocity.y = 3; // Ajusta la fuerza de salto
+  }
 }
 
 let cannonDebugger;
 
-var scene, camera, cameraTop, renderer, orbitControls, characterControls, physicWorld, physicCharacterBody;
+var scene, camera, cameraTop, renderer, orbitControls, characterControls, physicWorld, physicCharacterBody, physicWaterBody;
 const keysPressed = {}
 
 function init() {
@@ -261,10 +275,10 @@ function init() {
   // OrbitControls
   orbitControls = new OrbitControls(camera, renderer.domElement);
   orbitControls.enableDamping = true
-  // orbitControls.enableZoom = false
+  orbitControls.enableZoom = false
   orbitControls.enablePan = false
-  // orbitControls.minPolarAngle = Math.PI / 4
-  // orbitControls.maxPolarAngle = Math.PI / 2;
+  orbitControls.minPolarAngle = Math.PI / 4
+  orbitControls.maxPolarAngle = Math.PI / 2;
 
   // Creando mundo fisico
   physicWorld = new CANNON.World();
@@ -348,6 +362,10 @@ function loadScene() {
 
   // Control Keys
   document.addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() === 'w') { // O la tecla que uses para saltar
+      characterControls.jump();
+
+    }
     if (event.key == 'Shift') {
       characterControls.updateRunToggle(true)
     }
@@ -533,6 +551,14 @@ function generateFloor() {
   heightfieldBody.position.set(-height / 2, 0, width / 2); // Ajustar posición si es necesario
   heightfieldBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0); // Rotar para coincidir con THREE.js
   physicWorld.addBody(heightfieldBody);
+
+  // Water
+  const waterHeight = 10; // Profundidad del agua
+  const waterShape = new CANNON.Box(new CANNON.Vec3(160, waterHeight, 160)); // Tamaño del agua
+  physicWaterBody = new CANNON.Body({ mass: 0, material: new CANNON.Material('water') });
+  physicWaterBody.addShape(waterShape);
+  physicWaterBody.position.set(0, -3.3 - waterHeight, 0); // Posicionar el cuerpo del agua
+  physicWorld.addBody(physicWaterBody);
 }
 
 function light() {
