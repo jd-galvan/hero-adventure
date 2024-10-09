@@ -25,6 +25,7 @@ export class CharacterControls {
   toggleRun = false
   currentAction
   currentSurface
+  characterBody
 
   // temporary data
   walkDirection = new THREE.Vector3()
@@ -40,8 +41,11 @@ export class CharacterControls {
   constructor(model,
     mixer, animationsMap,
     orbitControl, camera,
-    cameraTop, currentAction) {
+    cameraTop, currentAction,
+    characterBody, position) {
     this.model = model
+    this.characterBody = characterBody;
+    model.position.x = -155
     model.position.x = -155
     model.position.z = -155
     // model.position.y = -4.3 // For swimming
@@ -63,6 +67,13 @@ export class CharacterControls {
     this.camera.position.y = this.model.position.y + 2
     this.#updateCameraTarget(0, 0)
     this.currentSurface = "land"
+
+    this.characterBody.addEventListener('collide', (event) => {
+      const collidedBody = event.body;
+      console.log('Colisión con:', collidedBody);
+
+      // Lógica adicional según el objeto con el que colisionó
+    });
   }
 
   updateRunToggle(mustRun) {
@@ -143,6 +154,8 @@ export class CharacterControls {
       const moveZ = this.walkDirection.z * velocity * delta
       this.model.position.x += moveX
       this.model.position.z += moveZ
+      this.characterBody.position.x += moveX
+      this.characterBody.position.z += moveZ
       this.#updateCameraTarget(moveX, moveZ)
     }
   }
