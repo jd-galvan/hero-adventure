@@ -4,6 +4,7 @@ import CannonDebugger from 'cannon-es-debugger';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { Terrain } from './world/terrain';
 import { Hero } from './world/hero';
+import { Sky } from './world/sky';
 
 let cannonDebugger;
 
@@ -45,17 +46,8 @@ function init() {
   // orbitControls.minPolarAngle = Math.PI / 4
   // orbitControls.maxPolarAngle = Math.PI / 2;
 
-
-  // skybox = new THREE.Mesh(new THREE.BoxGeometry(320, 320, 320));
-
-  // const ft = new THREE.TextureLoader().load("assets/skybox/purplenebula_ft.jpg");
-  // const bk = new THREE.TextureLoader().load("purplenebula_bk.jpg");
-  // const up = new THREE.TextureLoader().load("purplenebula_up.jpg");
-  // const dn = new THREE.TextureLoader().load("purplenebula_dn.jpg");
-  // const rt = new THREE.TextureLoader().load("purplenebula_rt.jpg");
-  // const lf = new THREE.TextureLoader().load("purplenebula_lf.jpg");
-
-
+  // Creando cielo
+  skybox = new Sky();
 
   // Creando mundo visual
   terrain = new Terrain();
@@ -86,15 +78,14 @@ function init() {
 }
 
 function loadScene() {
-  scene.background = new THREE.Color(0xa8def0);
   scene.add(terrain.getTerrainSurface());
   scene.add(terrain.getWaterSurface());
-  // scene.add(hero.getHeroModel());
+  scene.add(skybox.skybox);
   physicWorld.addBody(terrain.getPhysicTerrain());
   physicWorld.addBody(terrain.getPhysicWater());
-
-  scene.add(skybox);
-  // physicWorld.addBody(hero.getHeroBody());
+  skybox.wallBodies.forEach(wallBody => {
+    physicWorld.addBody(wallBody)
+  });
   light()
 }
 
