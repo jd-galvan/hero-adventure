@@ -70,7 +70,7 @@ function getRandomBetween(min, max) {
 }
 
 function init() {
-  document.getElementById('contador').innerText = "Diamantes: 0 / " + nDiamonds;
+  document.getElementById('counter').innerText = "Diamantes: 0 / " + nDiamonds;
   scene = new THREE.Scene();
 
   // CAMERA: Tercera persona
@@ -156,7 +156,7 @@ function loadScene() {
 function updateDiamondsCounter() {
   // Actualizamos el texto en el div
   diamondsCounter++;
-  document.getElementById('contador').innerText = "Diamantes: " + diamondsCounter + " / " + nDiamonds;
+  document.getElementById('counter').innerText = "Diamantes: " + diamondsCounter + " / " + nDiamonds;
 }
 
 const clock = new THREE.Clock();
