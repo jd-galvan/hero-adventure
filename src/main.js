@@ -10,6 +10,7 @@ import { Prison } from './objects/prison';
 import { Prisoner } from './characters/prisoner';
 
 let cannonDebugger;
+const nDiamonds = 30;
 
 let terrain,
   scene,
@@ -23,9 +24,44 @@ let terrain,
   skybox,
   diamondsCounter = 0,
   prison,
-  prisoner;
+  prisoner,
+  timeRemaining = 20 * nDiamonds;
 
-const nDiamonds = 1;
+
+var lastTime = performance.now(); // Tiempo inicial para el cálculo del decremento
+
+// Función para formatear el tiempo en MM:SS
+function formatTime(seconds) {
+  var minutes = Math.floor(seconds / 60); // Calcular minutos
+  var seconds = seconds % 60; // Calcular segundos restantes
+
+  // Asegurarse de que los minutos y segundos tengan siempre dos dígitos
+  var minutesStr = minutes < 10 ? '0' + minutes : minutes;
+  var secondsStr = seconds < 10 ? '0' + seconds : seconds;
+
+  return minutesStr + ':' + secondsStr;
+}
+
+// Función para decrementar el tiempo
+function decrementTime() {
+  var currentTime = performance.now();
+  var elapsedTime = currentTime - lastTime;
+
+  // Si ha pasado más de un segundo, decrementa el tiempo restante
+  if (elapsedTime >= 1000) {
+    timeRemaining--;
+    lastTime = currentTime;
+
+    // Actualiza el texto en el contador en formato MM:SS
+    document.getElementById('countdown').innerHTML = "Tiempo restante: " + formatTime(timeRemaining);
+
+    // Si el tiempo llega a cero, detener el contador
+    if (timeRemaining <= 0) {
+      document.getElementById('countdown').innerHTML = "¡Tiempo agotado!";
+      return;
+    }
+  }
+}
 
 const keysPressed = {}
 
@@ -179,6 +215,8 @@ function render() {
 
   // Finalmente renderizamos la escena desde la cámara ortográfica (mini-mapa)
   renderer.render(scene, cameraTop);
+
+  decrementTime()
 
   // Debugging de cannon js
   if (import.meta.env.VITE_CANNON_DEBUGGER_ENABLED == 'true') {
