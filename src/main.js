@@ -7,6 +7,7 @@ import { Hero } from './characters/hero';
 import { Sky } from './world/sky';
 import { Diamond } from './objects/diamond';
 import { Prison } from './objects/prison';
+import { Prisoner } from './characters/prisoner';
 
 let cannonDebugger;
 
@@ -21,9 +22,10 @@ let terrain,
   diamonds,
   skybox,
   diamondsCounter = 0,
-  prison;
+  prison,
+  prisoner;
 
-const nDiamonds = 30;
+const nDiamonds = 1;
 
 const keysPressed = {}
 
@@ -34,8 +36,6 @@ function getRandomBetween(min, max) {
 function init() {
   document.getElementById('contador').innerText = "Diamantes: 0 / " + nDiamonds;
   scene = new THREE.Scene();
-
-  prison = new Prison();
 
   // CAMERA: Tercera persona
   camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -85,10 +85,12 @@ function init() {
   document.body.appendChild(renderer.domElement);
 
   hero = new Hero(orbitControls, camera, cameraTop, scene, physicWorld);
+  prison = new Prison();
+  prisoner = new Prisoner(scene);
 
   diamonds = [];
   for (let index = 0; index < nDiamonds; index++) {
-    diamonds.push(new Diamond(getRandomBetween(-270, 270), getRandomBetween(-270, 270), scene, physicWorld, hero.characterBody))
+    diamonds.push(new Diamond(getRandomBetween(-160, 160), getRandomBetween(-160, 160), scene, physicWorld, hero.characterBody))
   }
 
   setupKeyCommands();
@@ -129,6 +131,7 @@ function render() {
   physicWorld.step(1 / 60, mixerUpdateDelta, 3);
 
   hero.update(mixerUpdateDelta, keysPressed);
+  prisoner.update(mixerUpdateDelta);
 
 
   diamonds.forEach((diamond, index) => {
