@@ -35,9 +35,9 @@ export class Diamond {
             });
           }
         });
-        const radius = 0.5;
+
         this.diamondBody = new CANNON.Body({ mass: 1, material: new CANNON.Material('default') });
-        this.diamondBody.addShape(new CANNON.Sphere(radius));
+        this.diamondBody.addShape(new CANNON.Box(new CANNON.Vec3(0.25, 0.15, 0.25)));
         this.diamondBody.position.x = this.posX;
         this.diamondBody.position.z = this.posZ;
         this.diamondBody.position.y = 70
