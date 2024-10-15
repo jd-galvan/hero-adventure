@@ -8,9 +8,8 @@ const DOWN = 'arrowdown'
 const RIGHT = 'arrowright'
 const SHIFT = 'shift'
 const W = 'w'
-const E = 'e'
 const DIRECTIONS = [UP, LEFT, DOWN, RIGHT]
-const ACTIONS = [W, E]
+const ACTIONS = [W]
 
 const SURFACES = ["land", "water"]
 
@@ -47,6 +46,13 @@ export class Hero {
   }
 
   constructor(orbitControl, camera, cameraTop, scene, physicWorld) {
+    const radius = 1;
+    this.characterBody = new CANNON.Body({ mass: 1, material: new CANNON.Material('default') });
+    this.characterBody.addShape(new CANNON.Sphere(radius));
+    this.characterBody.position.x = this.initialPosition.x;
+    this.characterBody.position.y = this.initialPosition.y;
+    this.characterBody.position.z = this.initialPosition.z;
+
     new GLTFLoader().loadAsync("/models/mainCharacter.glb")
       .then((gltf) => {
         this.model = gltf.scene;
@@ -66,13 +72,6 @@ export class Hero {
         this.gltfAnimations.filter(a => a.name != 'TPose').forEach((a) => {
           this.animationsMap.set(a.name, this.mixer.clipAction(a))
         })
-
-        const radius = 1;
-        this.characterBody = new CANNON.Body({ mass: 1, material: new CANNON.Material('default') });
-        this.characterBody.addShape(new CANNON.Sphere(radius));
-        this.characterBody.position.x = this.initialPosition.x;
-        this.characterBody.position.y = this.initialPosition.y;
-        this.characterBody.position.z = this.initialPosition.z;
 
         this.model.position.copy(this.characterBody.position)
         this.model.rotation.y = -2.2
@@ -110,7 +109,7 @@ export class Hero {
     return this.model;
   }
 
-  getHeroBody() {
+  get characterBody() {
     return this.characterBody;
   }
 
@@ -129,99 +128,99 @@ export class Hero {
   }
 
   update(delta, keysPressed) {
-    const directionPressed = DIRECTIONS.some(key => keysPressed[key] == true)
+    if (this.model) {
+      const directionPressed = DIRECTIONS.some(key => keysPressed[key] == true)
 
-    var play = '';
-    if (directionPressed && this.toggleRun && this.currentSurface == "land") {
-      play = 'Run'
-    } else if (directionPressed && this.currentSurface == "land") {
-      play = 'Walk'
-    } else if (this.currentSurface == "land") {
-      play = "Idle"
-    } else {
-      play = "Swim"
-    }
-
-    const actionPressed = ACTIONS.find(key => keysPressed[key] == true)
-
-    switch (actionPressed) {
-      case W:
-        play = 'Jump'
-        break;
-      case E:
-        play = "Fight"
-      default:
-        break;
-    }
-
-    if (this.currentAction != play) {
-      const toPlay = this.animationsMap.get(play)
-      const current = this.animationsMap.get(this.currentAction)
-
-      current.fadeOut(this.fadeDuration)
-      toPlay.reset().fadeIn(this.fadeDuration).play();
-
-      this.currentAction = play
-    }
-
-    this.mixer.update(delta)
-
-    let moveX = 0;
-    let moveZ = 0;
-    // if (this.currentAction == 'Run' || this.currentAction == 'Walk') {
-    if (directionPressed) {
-      // calculate towards camera direction
-      var angleYCameraDirection = Math.atan2(
-        (this.camera.position.x - this.model.position.x),
-        (this.camera.position.z - this.model.position.z))
-      // diagonal movement angle offset
-      var directionOffset = this.calculateRotationOffset(keysPressed)
-
-      // rotate model
-      this.rotateQuarternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirection + directionOffset)
-      this.model.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
-
-      // calculate direction
-      this.camera.getWorldDirection(this.walkDirection)
-      this.walkDirection.y = 0
-      this.walkDirection.normalize()
-      this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset)
-
-      this.camera.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
-      // run/walk velocity
-      const velocity = this.toggleRun && this.currentSurface == "land" ? this.runVelocity : this.walkVelocity
-
-      this.characterBody.velocity.x = this.walkDirection.x * velocity;
-      this.characterBody.velocity.z = this.walkDirection.z * velocity;
-      // move model & camera
-      moveX = this.walkDirection.x * velocity * delta
-      moveZ = this.walkDirection.z * velocity * delta
-    } else {
-      // Detener al personaje si no se presionan teclas de dirección
-      this.characterBody.velocity.x = 0;
-      this.characterBody.velocity.z = 0;
-    }
-
-    if (this.characterBody.position.y < this.waterLevel) {
-      if (this.currentSurface !== "water") {
-        console.log("El personaje ha entrado en el agua");
-        this.currentSurface = "water";
+      var play = '';
+      if (directionPressed && this.toggleRun && this.currentSurface == "land") {
+        play = 'Run'
+      } else if (directionPressed && this.currentSurface == "land") {
+        play = 'Walk'
+      } else if (this.currentSurface == "land") {
+        play = "Idle"
+      } else {
+        play = "Swim"
       }
-    } else {
-      if (this.currentSurface !== "land") {
-        console.log("El personaje ha salido del agua");
-        this.currentSurface = "land";
+
+      const actionPressed = ACTIONS.find(key => keysPressed[key] == true)
+
+      switch (actionPressed) {
+        case W:
+          play = 'Jump'
+          break;
+        default:
+          break;
       }
-      this.characterBody.linearDamping = 0.1; // Restablece la resistencia en tierra
+
+      if (this.currentAction != play) {
+        const toPlay = this.animationsMap.get(play)
+        const current = this.animationsMap.get(this.currentAction)
+
+        current.fadeOut(this.fadeDuration)
+        toPlay.reset().fadeIn(this.fadeDuration).play();
+
+        this.currentAction = play
+      }
+
+      this.mixer.update(delta)
+
+      let moveX = 0;
+      let moveZ = 0;
+      // if (this.currentAction == 'Run' || this.currentAction == 'Walk') {
+      if (directionPressed) {
+        // calculate towards camera direction
+        var angleYCameraDirection = Math.atan2(
+          (this.camera.position.x - this.model.position.x),
+          (this.camera.position.z - this.model.position.z))
+        // diagonal movement angle offset
+        var directionOffset = this.calculateRotationOffset(keysPressed)
+
+        // rotate model
+        this.rotateQuarternion.setFromAxisAngle(this.rotateAngle, angleYCameraDirection + directionOffset)
+        this.model.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
+
+        // calculate direction
+        this.camera.getWorldDirection(this.walkDirection)
+        this.walkDirection.y = 0
+        this.walkDirection.normalize()
+        this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset)
+
+        this.camera.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
+        // run/walk velocity
+        const velocity = this.toggleRun && this.currentSurface == "land" ? this.runVelocity : this.walkVelocity
+
+        this.characterBody.velocity.x = this.walkDirection.x * velocity;
+        this.characterBody.velocity.z = this.walkDirection.z * velocity;
+        // move model & camera
+        moveX = this.walkDirection.x * velocity * delta
+        moveZ = this.walkDirection.z * velocity * delta
+      } else {
+        // Detener al personaje si no se presionan teclas de dirección
+        this.characterBody.velocity.x = 0;
+        this.characterBody.velocity.z = 0;
+      }
+
+      if (this.characterBody.position.y < this.waterLevel) {
+        if (this.currentSurface !== "water") {
+          console.log("El personaje ha entrado en el agua");
+          this.currentSurface = "water";
+        }
+      } else {
+        if (this.currentSurface !== "land") {
+          console.log("El personaje ha salido del agua");
+          this.currentSurface = "land";
+        }
+        this.characterBody.linearDamping = 0.1; // Restablece la resistencia en tierra
+      }
+
+      // Sincronizar el modelo con el cuerpo físico
+      this.model.position.copy(this.characterBody.position);
+      this.model.position.y -= 1;
+
+      // Actualizar la cámara
+      this.#updateCameraTarget(moveX, moveZ);
+      this.#updateCameraTopTarget(moveX, moveZ);
     }
-
-    // Sincronizar el modelo con el cuerpo físico
-    this.model.position.copy(this.characterBody.position);
-    this.model.position.y -= 1;
-
-    // Actualizar la cámara
-    this.#updateCameraTarget(moveX, moveZ);
-    this.#updateCameraTopTarget(moveX, moveZ);
   }
 
   #updateCameraTarget(moveX, moveZ) {

@@ -5,6 +5,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { Terrain } from './world/terrain';
 import { Hero } from './world/hero';
 import { Sky } from './world/sky';
+import { Diamond } from './world/diamond';
 
 let cannonDebugger;
 
@@ -16,11 +17,20 @@ let terrain,
   orbitControls,
   physicWorld,
   hero,
-  skybox;
+  diamonds,
+  skybox,
+  diamondsCounter = 0;
+
+const nDiamonds = 30;
 
 const keysPressed = {}
 
+function getRandomBetween(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
 function init() {
+  document.getElementById('contador').innerText = "Diamantes: 0 / " + nDiamonds;
   scene = new THREE.Scene();
 
   // CAMERA: Tercera persona
@@ -72,6 +82,11 @@ function init() {
 
   hero = new Hero(orbitControls, camera, cameraTop, scene, physicWorld);
 
+  diamonds = [];
+  for (let index = 0; index < nDiamonds; index++) {
+    diamonds.push(new Diamond(getRandomBetween(-270, 270), getRandomBetween(-270, 270), scene, physicWorld, hero.characterBody))
+  }
+
   setupKeyCommands();
 
   // DEBUGGING
@@ -94,6 +109,12 @@ function loadScene() {
   light();
 }
 
+function updateDiamondsCounter() {
+  // Actualizamos el texto en el div
+  diamondsCounter++;
+  document.getElementById('contador').innerText = "Diamantes: " + diamondsCounter + " / " + nDiamonds;
+}
+
 const clock = new THREE.Clock();
 function render() {
   requestAnimationFrame(render);
@@ -101,10 +122,25 @@ function render() {
   // Avanzar la simulación física
   physicWorld.step(1 / 60, mixerUpdateDelta, 3);
 
-  if (hero.getHeroModel()) {
-    hero.update(mixerUpdateDelta, keysPressed);
-  }
+  hero.update(mixerUpdateDelta, keysPressed);
 
+
+  diamonds.forEach((diamond, index) => {
+    diamond.update();
+    if (hero.characterBody && diamond.diamondBody) {
+      const distancia = hero.characterBody.position.distanceTo(diamond.diamondBody.position);
+      if (distancia <= 2) {
+
+        // Eliminar el diamante del mundo de físicas y de la escena
+        physicWorld.removeBody(diamond.diamondBody); // Eliminar del mundo físico
+        diamonds.splice(index, 1); // Eliminar del array de diamantes
+        scene.remove(diamond.model); // Eliminar la geometría Three.js (asumiendo que estás usando threeMesh en cada body)
+
+        // Aumentar el contador
+        updateDiamondsCounter();
+      }
+    }
+  })
   // Actualizar controles de órbita para la cámara de tercera persona
   orbitControls.update();
 
