@@ -3,9 +3,10 @@ import * as CANNON from 'cannon-es'
 import CannonDebugger from 'cannon-es-debugger';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { Terrain } from './world/terrain';
-import { Hero } from './world/hero';
+import { Hero } from './characters/hero';
 import { Sky } from './world/sky';
-import { Diamond } from './world/diamond';
+import { Diamond } from './objects/diamond';
+import { Prison } from './objects/prison';
 
 let cannonDebugger;
 
@@ -19,7 +20,8 @@ let terrain,
   hero,
   diamonds,
   skybox,
-  diamondsCounter = 0;
+  diamondsCounter = 0,
+  prison;
 
 const nDiamonds = 30;
 
@@ -32,6 +34,8 @@ function getRandomBetween(min, max) {
 function init() {
   document.getElementById('contador').innerText = "Diamantes: 0 / " + nDiamonds;
   scene = new THREE.Scene();
+
+  prison = new Prison();
 
   // CAMERA: Tercera persona
   camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -101,11 +105,13 @@ function loadScene() {
   scene.add(terrain.getTerrainSurface());
   scene.add(terrain.getWaterSurface());
   scene.add(skybox.skybox);
+  scene.add(prison.prison);
   physicWorld.addBody(terrain.getPhysicTerrain());
   physicWorld.addBody(terrain.getPhysicWater());
   skybox.wallBodies.forEach(wallBody => {
     physicWorld.addBody(wallBody)
   });
+  physicWorld.addBody(prison.prisonBody)
   light();
 }
 
