@@ -46,7 +46,7 @@ export class Hero {
     z: -155
   }
 
-  constructor(orbitControl, camera, scene, physicWorld) {
+  constructor(orbitControl, camera, cameraTop, scene, physicWorld) {
     new GLTFLoader().loadAsync("/models/mainCharacter.glb")
       .then((gltf) => {
         this.model = gltf.scene;
@@ -87,7 +87,14 @@ export class Hero {
         this.camera.position.x = this.model.position.x - 3
         this.camera.position.z = this.model.position.z - 3
         this.camera.position.y = this.model.position.y + 2
-        this.#updateCameraTarget(0, 0)
+        this.#updateCameraTarget(0, 0);
+        this.cameraTop = cameraTop
+        this.cameraTop.position.x = this.model.position.x
+        this.cameraTop.position.z = this.model.position.z
+        this.cameraTop.position.y = 100
+        this.cameraTop.lookAt(this.model.position.x, 0, this.model.position.z)
+        this.#updateCameraTopTarget(0, 0);
+        this.cameraTop.rotation.z -= Math.PI / 2;
         this.currentSurface = "land"
 
         scene.add(this.model);
@@ -96,26 +103,6 @@ export class Hero {
       .catch((error) => {
         console.error('Error al cargar el modelo:', error);
       });
-
-    // new GLTFLoader().load("models/mainCharacter.glb",
-    //   (gltf) => {
-    //     console.log("ENTRO AQUI")
-    //     model = gltf.scene;
-    //     model.traverse(function (object) {
-    //       if (object.isMesh) {
-    //         object.castShadow = true;
-    //         if (object.material.map) {
-    //           object.material.roughness = 0.6;
-    //           object.material.metalness = 0.0;
-    //         }
-    //         object.material.color.set(0xffeed4);
-    //       }
-    //     });
-    //     gltfAnimations = gltf.animations;
-    //   });
-
-    // this.gltfAnimations = gltf.animations;
-    // this.model = model;
   }
 
 
@@ -234,6 +221,7 @@ export class Hero {
 
     // Actualizar la cámara
     this.#updateCameraTarget(moveX, moveZ);
+    this.#updateCameraTopTarget(moveX, moveZ);
   }
 
   #updateCameraTarget(moveX, moveZ) {
@@ -246,6 +234,12 @@ export class Hero {
     this.cameraTarget.z = this.characterBody.position.z
 
     this.orbitControl.target = this.cameraTarget
+  }
+
+  #updateCameraTopTarget(moveX, moveZ) {
+    // move camera
+    this.cameraTop.position.x += moveX
+    this.cameraTop.position.z += moveZ
   }
 
   resetCameraPosition() {

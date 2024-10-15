@@ -38,8 +38,6 @@ function init() {
     0.1,                               // near
     1000                               // far
   );
-  cameraTop.position.set(0, 100, 0);   // Posición elevada (mapa desde arriba)
-  cameraTop.lookAt(0, 0, 0);           // Apuntar hacia el centro de la escena
 
   // Renderer
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -72,7 +70,7 @@ function init() {
 
   document.body.appendChild(renderer.domElement);
 
-  hero = new Hero(orbitControls, camera, scene, physicWorld);
+  hero = new Hero(orbitControls, camera, cameraTop, scene, physicWorld);
 
   setupKeyCommands();
 
@@ -115,12 +113,26 @@ function render() {
   renderer.setScissorTest(false);  // Desactivar scissor para la vista principal
   renderer.render(scene, camera);
 
-  // Renderizar la cámara ortográfica (mini-mapa) en una esquina superior derecha
+  // Mapa
   const insetWidth = window.innerWidth / 4;  // Ancho del mini-mapa
   const insetHeight = window.innerHeight / 4;  // Alto del mini-mapa
-  renderer.setViewport(window.innerWidth - insetWidth - 10, 10, insetWidth, insetHeight);  // Ajustar viewport para mini-mapa
-  renderer.setScissor(window.innerWidth - insetWidth - 10, 10, insetWidth, insetHeight);   // Ajustar scissor para recortar la región
-  renderer.setScissorTest(true);  // Habilitar scissor para limitar la renderización
+  const borderSize = 3;  // Tamaño del borde en píxeles
+
+  // Paso 1: Renderizar el borde negro antes de renderizar la cámara ortográfica
+  renderer.setViewport(window.innerWidth - insetWidth - borderSize - 10, 10 - borderSize, insetWidth + 2 * borderSize, insetHeight + 2 * borderSize);
+  renderer.setScissor(window.innerWidth - insetWidth - borderSize - 10, 10 - borderSize, insetWidth + 2 * borderSize, insetHeight + 2 * borderSize);
+  renderer.setScissorTest(true);
+  renderer.setClearColor(0x000000);  // Color del borde (negro)
+  renderer.clear();  // Limpiar esa área con el color del borde
+
+  // Paso 2: Renderizar la cámara ortográfica dentro del borde negro
+  renderer.setViewport(window.innerWidth - insetWidth - 10, 10, insetWidth, insetHeight);
+  renderer.setScissor(window.innerWidth - insetWidth - 10, 10, insetWidth, insetHeight);
+  renderer.setScissorTest(true);
+  renderer.setClearColor(0x87CEEB);  // Color del cielo o fondo
+  renderer.clear();  // Limpiar la zona interna del mini-mapa
+
+  // Finalmente renderizamos la escena desde la cámara ortográfica (mini-mapa)
   renderer.render(scene, cameraTop);
 
   // Debugging de cannon js
