@@ -25,8 +25,34 @@ let terrain,
   diamondsCounter = 0,
   prison,
   prisoner,
-  timeRemaining = 20 * nDiamonds;
+  timeRemaining = 20 * nDiamonds,
+  gameOver = false;
 
+
+
+// Función para mostrar la pantalla de "Perdiste"
+function showGameOver() {
+  document.getElementById('gameOverScreen').style.visibility = 'visible'; // Mostrar pantalla de Game Over
+}
+
+// Función para ocultar la pantalla de "Perdiste" y reiniciar el juego
+function hideGameOver() {
+  document.getElementById('gameOverScreen').style.visibility = 'hidden'; // Ocultar pantalla de Game Over
+}
+
+// Función para restablecer el juego
+function resetGame() {
+  timeRemaining = 10; // Reiniciar el tiempo
+  gameOver = false; // Resetear el estado de Game Over
+  hideGameOver(); // Ocultar la pantalla de Game Over
+}
+
+// Evento para detectar cuando se presiona la tecla Space
+document.addEventListener('keydown', function (event) {
+  if (event.code === 'Space' && gameOver) {
+    resetGame(); // Reiniciar el juego al presionar Space
+  }
+});
 
 var lastTime = performance.now(); // Tiempo inicial para el cálculo del decremento
 
@@ -57,8 +83,11 @@ function decrementTime() {
 
     // Si el tiempo llega a cero, detener el contador
     if (timeRemaining <= 0) {
-      document.getElementById('countdown').innerHTML = "¡Tiempo agotado!";
-      return;
+      // document.getElementById('countdown').innerHTML = "¡Tiempo agotado!";
+      // Si el tiempo llega a cero, mostrar pantalla de Game Over
+      gameOver = true;
+      // document.getElementById('contador').innerHTML = "Tiempo restante: 00:00";
+      showGameOver(); // Mostrar la pantalla de "Perdiste"
     }
   }
 }
