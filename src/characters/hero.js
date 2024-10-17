@@ -85,7 +85,7 @@ export class Hero {
         this.camera = camera
         this.camera.position.x = this.model.position.x - 3
         this.camera.position.z = this.model.position.z - 3
-        this.camera.position.y = this.model.position.y + 2
+        this.camera.position.y = this.model.position.y + 1
         this.#updateCameraTarget(0, 0);
         this.cameraTop = cameraTop
         this.cameraTop.position.x = this.model.position.x
@@ -185,7 +185,6 @@ export class Hero {
         this.walkDirection.normalize()
         this.walkDirection.applyAxisAngle(this.rotateAngle, directionOffset)
 
-        this.camera.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
         // run/walk velocity
         const velocity = this.toggleRun && this.currentSurface == "land" ? this.runVelocity : this.walkVelocity
 
@@ -194,10 +193,14 @@ export class Hero {
         // move model & camera
         moveX = this.walkDirection.x * velocity * delta
         moveZ = this.walkDirection.z * velocity * delta
+
+        this.camera.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
       } else {
         // Detener al personaje si no se presionan teclas de dirección
         this.characterBody.velocity.x = 0;
+        moveX = 0;
         this.characterBody.velocity.z = 0;
+        moveZ = 0;
       }
 
       if (this.characterBody.position.y < this.waterLevel) {
@@ -210,14 +213,12 @@ export class Hero {
           console.log("El personaje ha salido del agua");
           this.currentSurface = "land";
         }
-        this.characterBody.linearDamping = 0.1; // Restablece la resistencia en tierra
       }
 
       // Sincronizar el modelo con el cuerpo físico
       this.model.position.copy(this.characterBody.position);
       this.model.position.y -= 1;
 
-      // Actualizar la cámara
       this.#updateCameraTarget(moveX, moveZ);
       this.#updateCameraTopTarget(moveX, moveZ);
     }
@@ -229,7 +230,7 @@ export class Hero {
     this.camera.position.z += moveZ
 
     this.cameraTarget.x = this.characterBody.position.x
-    this.cameraTarget.y = this.characterBody.position.y + 1
+    this.cameraTarget.y = this.characterBody.position.y
     this.cameraTarget.z = this.characterBody.position.z
 
     this.orbitControl.target = this.cameraTarget
