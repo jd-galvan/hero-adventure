@@ -75,6 +75,7 @@ export class Hero {
 
         this.model.position.copy(this.characterBody.position)
         this.model.rotation.y = -2.2
+        this.model.position.y -= 1;
         this.currentAction = "Idle"
         this.animationsMap.forEach((value, key) => {
           if (key == this.currentAction) {
@@ -85,7 +86,7 @@ export class Hero {
         this.camera = camera
         this.camera.position.x = this.model.position.x - 3
         this.camera.position.z = this.model.position.z - 3
-        this.camera.position.y = this.model.position.y + 1
+        this.camera.position.y = this.model.position.y + 2
         this.#updateCameraTarget(0, 0);
         this.cameraTop = cameraTop
         this.cameraTop.position.x = this.model.position.x
@@ -195,12 +196,16 @@ export class Hero {
         moveZ = this.walkDirection.z * velocity * delta
 
         this.camera.quaternion.rotateTowards(this.rotateQuarternion, 0.2)
+        // Sincronizar el modelo con el cuerpo físico
+        this.model.position.copy(this.characterBody.position);
+        this.model.position.y -= 1;
+
+        this.#updateCameraTarget(moveX, moveZ);
+        this.#updateCameraTopTarget(moveX, moveZ);
       } else {
         // Detener al personaje si no se presionan teclas de dirección
         this.characterBody.velocity.x = 0;
-        moveX = 0;
         this.characterBody.velocity.z = 0;
-        moveZ = 0;
       }
 
       if (this.characterBody.position.y < this.waterLevel) {
@@ -214,13 +219,6 @@ export class Hero {
           this.currentSurface = "land";
         }
       }
-
-      // Sincronizar el modelo con el cuerpo físico
-      this.model.position.copy(this.characterBody.position);
-      this.model.position.y -= 1;
-
-      this.#updateCameraTarget(moveX, moveZ);
-      this.#updateCameraTopTarget(moveX, moveZ);
     }
   }
 
