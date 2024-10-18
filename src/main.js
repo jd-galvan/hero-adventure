@@ -9,8 +9,9 @@ import { Diamond } from './objects/diamond';
 import { Prison } from './objects/prison';
 import { Prisoner } from './characters/prisoner';
 
+let nDiamonds;
+
 let cannonDebugger;
-const nDiamonds = 30;
 
 let terrain,
   scene,
@@ -25,7 +26,7 @@ let terrain,
   diamondsCounter = 0,
   prison,
   prisoner,
-  timeRemaining = 20 * nDiamonds,
+  timeRemaining,
   gameOver = false;
 
 
@@ -34,27 +35,18 @@ let terrain,
 function showGameOver() {
   document.getElementById('gameOverScreen').style.visibility = 'visible'; // Mostrar pantalla de Game Over
 }
-
-// Función para ocultar la pantalla de "Perdiste" y reiniciar el juego
-function hideGameOver() {
-  document.getElementById('gameOverScreen').style.visibility = 'hidden'; // Ocultar pantalla de Game Over
-}
-
-// Función para restablecer el juego
-function resetGame() {
-  timeRemaining = 10; // Reiniciar el tiempo
-  gameOver = false; // Resetear el estado de Game Over
-  hideGameOver(); // Ocultar la pantalla de Game Over
-}
-
 // Evento para detectar cuando se presiona la tecla Space
 document.addEventListener('keydown', function (event) {
   if (event.code === 'Space' && gameOver) {
-    resetGame(); // Reiniciar el juego al presionar Space
+    this.location.reload(); // Recargar la página para reiniciar el juego
   }
 });
 
-var lastTime = performance.now(); // Tiempo inicial para el cálculo del decremento
+let lastTime; // Tiempo inicial para el cálculo del decremento
+function resetTime() {
+  timeRemaining = 20 * nDiamonds;
+  lastTime = performance.now();
+}
 
 // Función para formatear el tiempo en MM:SS
 function formatTime(seconds) {
@@ -70,8 +62,9 @@ function formatTime(seconds) {
 
 // Función para decrementar el tiempo
 function decrementTime() {
-  var currentTime = performance.now();
-  var elapsedTime = currentTime - lastTime;
+  let currentTime = performance.now();
+  let elapsedTime = currentTime - lastTime;
+  console.log(elapsedTime)
 
   // Si ha pasado más de un segundo, decrementa el tiempo restante
   if (elapsedTime >= 1000) {
@@ -83,10 +76,7 @@ function decrementTime() {
 
     // Si el tiempo llega a cero, detener el contador
     if (timeRemaining <= 0) {
-      // document.getElementById('countdown').innerHTML = "¡Tiempo agotado!";
-      // Si el tiempo llega a cero, mostrar pantalla de Game Over
       gameOver = true;
-      // document.getElementById('contador').innerHTML = "Tiempo restante: 00:00";
       showGameOver(); // Mostrar la pantalla de "Perdiste"
     }
   }
@@ -98,7 +88,22 @@ function getRandomBetween(min, max) {
   return Math.random() * (max - min) + min;
 }
 
+function askForDiamonds() {
+  while (true) {
+    nDiamonds = parseInt(prompt("Shift: Velocidad\nW: Saltar\nSpace: Reajustar la camara\nDesplazamiento: Flechas direccionales\n\nIngresa la cantidad de elementos que deseas en la escena (1-30):"));
+    if (nDiamonds < 1 || nDiamonds > 30) {
+      alert("Ingresa un valor permitido de diamantes (1-30)");
+    } else {
+      break;
+    }
+  }
+}
+
 function init() {
+  askForDiamonds();
+  resetTime(nDiamonds);
+  console.log("TIME")
+  console.log(lastTime)
   document.getElementById('counter').innerText = "Diamantes: 0 / " + nDiamonds;
   scene = new THREE.Scene();
 
