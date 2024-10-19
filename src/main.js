@@ -8,6 +8,7 @@ import { Sky } from './world/sky';
 import { Diamond } from './objects/diamond';
 import { Prison } from './objects/prison';
 import { Prisoner } from './characters/prisoner';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 let nDiamonds;
 
@@ -99,9 +100,24 @@ function askForDiamonds() {
   }
 }
 
+let stats;
+function statsInit() {
+  // Inicializa Stats.js
+  stats = new Stats();
+  stats.showPanel(0); // 0 es el panel de FPS
+  document.body.appendChild(stats.dom); // Agregar el panel de stats a la página
+  // Estilo para posicionar el panel de Stats.js al centro del lado izquierdo
+  stats.dom.style.position = 'absolute';
+  stats.dom.style.left = '0px'; // Alinearlo al borde izquierdo
+  stats.dom.style.top = '50%'; // Centrarlo verticalmente en la pantalla
+  stats.dom.style.transform = 'translateY(-50%)'; // Ajustar para que el punto medio esté alineado
+}
+
 function init() {
   askForDiamonds();
   resetTime(nDiamonds);
+  statsInit();
+
   document.getElementById('counter').innerText = "Diamantes: 0 / " + nDiamonds;
   scene = new THREE.Scene();
 
@@ -294,6 +310,9 @@ function render() {
   if (import.meta.env.VITE_CANNON_DEBUGGER_ENABLED == 'true') {
     cannonDebugger.update();
   }
+
+  stats.end(); // Termina la medición del rendimiento
+
 }
 
 function light() {
