@@ -10,12 +10,16 @@ export class Diamond {
   model;
   diamondBody;
   heroBody;
+  circle;
 
   get model() {
     return this.model;
   }
   get diamondBody() {
     return this.diamondBody;
+  }
+  get circle() {
+    return this.circle;
   }
 
   constructor(posX, posZ, scene, physicWorld, heroBody) {
@@ -45,7 +49,13 @@ export class Diamond {
         this.model.scale.set(this.scale, this.scale, this.scale)
         this.model.position.copy(this.diamondBody.position)
 
+        // Crear circulo para mapa ortografico
+        this.circle = new THREE.Mesh(new THREE.CircleGeometry(4, 4), new THREE.MeshBasicMaterial({ color: 'gray' }))
+        this.circle.position.set(this.diamondBody.position.x, 90, this.diamondBody.position.z);
+        this.circle.rotation.x = -Math.PI / 2;
+
         scene.add(this.model);
+        scene.add(this.circle);
         physicWorld.addBody(this.diamondBody);
         this.diamondBody.addEventListener("collide", function (event) {
           const collidedWith = event.body; // El cuerpo con el que colisionó
@@ -62,6 +72,8 @@ export class Diamond {
   update() {
     if (this.model) {
       this.model.position.copy(this.diamondBody.position);
+      this.circle.position.x = this.model.position.x;
+      this.circle.position.z = this.model.position.z;
     }
   }
 

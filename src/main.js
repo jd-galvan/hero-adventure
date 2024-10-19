@@ -253,7 +253,8 @@ function render() {
           // Eliminar el diamante del mundo de físicas y de la escena
           physicWorld.removeBody(diamond.diamondBody); // Eliminar del mundo físico
           diamonds.splice(index, 1); // Eliminar del array de diamantes
-          scene.remove(diamond.model); // Eliminar la geometría Three.js (asumiendo que estás usando threeMesh en cada body)
+          scene.remove(diamond.model); // Eliminar la geometría Three.js
+          scene.remove(diamond.circle); // Eliminar la geometría del mapa 
 
           // Aumentar el contador
           updateDiamondsCounter();

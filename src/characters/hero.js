@@ -126,7 +126,7 @@ export class Hero {
     const triangleGeometry = new THREE.BufferGeometry();
     triangleGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 
-    this.triangleMaterial = new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide }); // Material amarillo
+    this.triangleMaterial = new THREE.MeshBasicMaterial({ color: 'red' }); // Material amarillo
     this.triangle = new THREE.Mesh(triangleGeometry, this.triangleMaterial);
 
     // Posicionamos el triángulo por encima del personaje
