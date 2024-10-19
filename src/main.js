@@ -227,6 +227,7 @@ function render() {
   if (!win) {
 
     hero.update(mixerUpdateDelta, keysPressed);
+    hero.adjustCameraTopPosition();
     diamonds.forEach((diamond, index) => {
       diamond.update();
       if (hero.characterBody && diamond.diamondBody) {
