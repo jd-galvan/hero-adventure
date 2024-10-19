@@ -27,7 +27,8 @@ let terrain,
   prison,
   prisoner,
   timeRemaining,
-  gameOver = false;
+  gameOver = false,
+  win = false;
 
 
 
@@ -44,7 +45,7 @@ document.addEventListener('keydown', function (event) {
 
 let lastTime; // Tiempo inicial para el cálculo del decremento
 function resetTime() {
-  timeRemaining = 20 * nDiamonds;
+  timeRemaining = 70 * nDiamonds;
   lastTime = performance.now();
 }
 
@@ -64,7 +65,6 @@ function formatTime(seconds) {
 function decrementTime() {
   let currentTime = performance.now();
   let elapsedTime = currentTime - lastTime;
-  console.log(elapsedTime)
 
   // Si ha pasado más de un segundo, decrementa el tiempo restante
   if (elapsedTime >= 1000) {
@@ -102,8 +102,6 @@ function askForDiamonds() {
 function init() {
   askForDiamonds();
   resetTime(nDiamonds);
-  console.log("TIME")
-  console.log(lastTime)
   document.getElementById('counter').innerText = "Diamantes: 0 / " + nDiamonds;
   scene = new THREE.Scene();
 
@@ -193,6 +191,32 @@ function updateDiamondsCounter() {
   document.getElementById('counter').innerText = "Diamantes: " + diamondsCounter + " / " + nDiamonds;
 }
 
+function moveCameraToCenter() {
+  const targetPosition = new THREE.Vector3(5, 1, 5);  // Posición final de la cámara
+  const duration = 2;  // Duración de la animación en segundos
+  const startPosition = camera.position.clone();  // Clonamos la posición actual de la cámara
+  const startTime = performance.now();  // Tiempo inicial
+  const centerOfScene = new THREE.Vector3(0, 0, 0);  // Punto hacia el que queremos que mire la cámara
+
+  function animateCamera(time) {
+    const elapsed = (time - startTime) / 1000;  // Tiempo transcurrido en segundos
+    const t = Math.min(elapsed / duration, 1);  // Interpolación entre 0 y 1
+    camera.position.lerpVectors(startPosition, targetPosition, t);  // Interpolación lineal
+
+    // Hacer que la cámara siempre mire hacia el centro de la escena
+    camera.lookAt(centerOfScene);  // Ajusta la cámara para que mire hacia el centro dinámicamente
+
+    // Si la interpolación no ha llegado a 1, seguir animando
+    if (t < 1) {
+      requestAnimationFrame(animateCamera);
+    }
+  }
+
+  requestAnimationFrame(animateCamera);  // Inicia la animación
+}
+
+
+
 const clock = new THREE.Clock();
 function render() {
   requestAnimationFrame(render);
@@ -200,28 +224,42 @@ function render() {
   // Avanzar la simulación física
   physicWorld.step(1 / 60, mixerUpdateDelta, 3);
 
-  hero.update(mixerUpdateDelta, keysPressed);
+  if (!win) {
+
+    hero.update(mixerUpdateDelta, keysPressed);
+    diamonds.forEach((diamond, index) => {
+      diamond.update();
+      if (hero.characterBody && diamond.diamondBody) {
+        const distancia = hero.characterBody.position.distanceTo(diamond.diamondBody.position);
+        if (distancia <= 2) {
+
+          // Eliminar el diamante del mundo de físicas y de la escena
+          physicWorld.removeBody(diamond.diamondBody); // Eliminar del mundo físico
+          diamonds.splice(index, 1); // Eliminar del array de diamantes
+          scene.remove(diamond.model); // Eliminar la geometría Three.js (asumiendo que estás usando threeMesh en cada body)
+
+          // Aumentar el contador
+          updateDiamondsCounter();
+        }
+      }
+    })
+
+    orbitControls.update();
+
+    decrementTime()
+  }
+
   prisoner.update(mixerUpdateDelta);
 
-
-  diamonds.forEach((diamond, index) => {
-    diamond.update();
-    if (hero.characterBody && diamond.diamondBody) {
-      const distancia = hero.characterBody.position.distanceTo(diamond.diamondBody.position);
-      if (distancia <= 2) {
-
-        // Eliminar el diamante del mundo de físicas y de la escena
-        physicWorld.removeBody(diamond.diamondBody); // Eliminar del mundo físico
-        diamonds.splice(index, 1); // Eliminar del array de diamantes
-        scene.remove(diamond.model); // Eliminar la geometría Three.js (asumiendo que estás usando threeMesh en cada body)
-
-        // Aumentar el contador
-        updateDiamondsCounter();
-      }
-    }
-  })
+  // Verificar si se han recogido todos los diamantes
+  if (diamonds.length === 0) {
+    win = true;
+    scene.remove(prison.prison);
+    moveCameraToCenter(); // Mover la cámara cuando se recogen todos los diamantes
+    prisoner.release();
+    document.getElementById('winText').style.display = 'block'; // Mostrar el texto de "Ganaste"
+  }
   // Actualizar controles de órbita para la cámara de tercera persona
-  orbitControls.update();
 
   // Renderizar escena con la cámara en tercera persona (pantalla completa)
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);  // Vista completa
@@ -250,7 +288,6 @@ function render() {
   // Finalmente renderizamos la escena desde la cámara ortográfica (mini-mapa)
   renderer.render(scene, cameraTop);
 
-  decrementTime()
 
   // Debugging de cannon js
   if (import.meta.env.VITE_CANNON_DEBUGGER_ENABLED == 'true') {

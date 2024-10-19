@@ -26,6 +26,17 @@
       visibility: hidden;
       z-index: 200;
     }
+
+    #winText {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      font-weight: bold;
+      color: black;
+      display: none;
+    }
   </style>
 </head>
 
@@ -33,6 +44,7 @@
   <div id="counter"
     style="position: absolute; top: 10px; left: 10px; color: white; font-size: 20px; font-family: Arial, sans-serif; z-index: 100;">
   </div>
+  <div id="winText">¡Has Ganado!</div>
   <div id="countdown"
     style="position: absolute; top: 10px; right: 10px; color: white; font-size: 20px; font-family: Arial, sans-serif; z-index: 100;">
   </div>

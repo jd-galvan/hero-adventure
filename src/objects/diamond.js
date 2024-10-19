@@ -61,7 +61,6 @@ export class Diamond {
 
   update() {
     if (this.model) {
-      this.model.rotation.y += Math.PI / 100;
       this.model.position.copy(this.diamondBody.position);
     }
   }

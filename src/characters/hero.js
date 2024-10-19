@@ -19,7 +19,10 @@ export class Hero {
   mixer
   animationsMap = new Map()
   orbitControl
-  camera
+  camera;
+  get camera() {
+    return this.camera;
+  }
   cameraTop
 
   // state

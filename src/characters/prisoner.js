@@ -44,6 +44,19 @@ export class Prisoner {
       });
   }
 
+  release() {
+    let play = "Joy";
+    if (this.currentAction != play) {
+      const toPlay = this.animationsMap.get(play)
+      const current = this.animationsMap.get(this.currentAction)
+
+      current.fadeOut(this.fadeDuration)
+      toPlay.reset().fadeIn(this.fadeDuration).play();
+
+      this.currentAction = play
+    }
+  }
+
   update(delta) {
     if (this.model) {
       this.mixer.update(delta)
