@@ -146,6 +146,10 @@ function init() {
   // OrbitControls: Para la cámara en tercera persona
   orbitControls = new OrbitControls(camera, renderer.domElement);
   orbitControls.enableDamping = true;
+  orbitControls.enableZoom = false
+  orbitControls.enablePan = false
+  orbitControls.minPolarAngle = Math.PI / 4
+  orbitControls.maxPolarAngle = Math.PI / 2;
 
   // Creando cielo
   skybox = new Sky();
