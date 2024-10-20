@@ -178,7 +178,7 @@ function init() {
 
   diamonds = [];
   for (let index = 0; index < nDiamonds; index++) {
-    diamonds.push(new Diamond(getRandomBetween(-160, 160), getRandomBetween(-160, 160), scene, physicWorld, hero.characterBody))
+    diamonds.push(new Diamond(getRandomBetween(nDiamonds == 1 ? -150 : -160, nDiamonds == 1 ? -145 : 160), getRandomBetween(nDiamonds == 1 ? -150 : -160, nDiamonds == 1 ? -145 : 160), scene, physicWorld, hero.characterBody))
   }
 
   setupKeyCommands();
