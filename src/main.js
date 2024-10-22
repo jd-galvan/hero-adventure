@@ -194,13 +194,15 @@ async function init() {
   }
 
   setupKeyCommands();
-
   // DEBUGGING
   if (import.meta.env.VITE_CANNON_DEBUGGER_ENABLED == 'true') {
     cannonDebugger = new CannonDebugger(scene, physicWorld);
   }
 
   window.addEventListener('resize', onWindowResize);
+
+  loadScene();
+  render();
 }
 
 function loadScene() {
@@ -252,84 +254,86 @@ function moveCameraToCenter() {
 
 const clock = new THREE.Clock();
 function render() {
-  requestAnimationFrame(render);
-  let mixerUpdateDelta = clock.getDelta();
-  // Avanzar la simulación física
-  physicWorld.step(1 / 60, mixerUpdateDelta, 3);
+  if (nDiamonds) {
+    requestAnimationFrame(render);
+    let mixerUpdateDelta = clock.getDelta();
+    // Avanzar la simulación física
+    physicWorld.step(1 / 60, mixerUpdateDelta, 3);
 
-  if (!win) {
+    if (!win) {
 
-    hero.update(mixerUpdateDelta, keysPressed);
-    hero.adjustCameraTopPosition();
-    diamonds.forEach((diamond, index) => {
-      diamond.update();
-      if (hero.characterBody && diamond.diamondBody) {
-        const distancia = hero.characterBody.position.distanceTo(diamond.diamondBody.position);
-        if (distancia <= 2) {
+      hero.update(mixerUpdateDelta, keysPressed);
+      hero.adjustCameraTopPosition();
+      diamonds.forEach((diamond, index) => {
+        diamond.update();
+        if (hero.characterBody && diamond.diamondBody) {
+          const distancia = hero.characterBody.position.distanceTo(diamond.diamondBody.position);
+          if (distancia <= 2) {
 
-          // Eliminar el diamante del mundo de físicas y de la escena
-          physicWorld.removeBody(diamond.diamondBody); // Eliminar del mundo físico
-          diamonds.splice(index, 1); // Eliminar del array de diamantes
-          scene.remove(diamond.model); // Eliminar la geometría Three.js
-          scene.remove(diamond.circle); // Eliminar la geometría del mapa 
+            // Eliminar el diamante del mundo de físicas y de la escena
+            physicWorld.removeBody(diamond.diamondBody); // Eliminar del mundo físico
+            diamonds.splice(index, 1); // Eliminar del array de diamantes
+            scene.remove(diamond.model); // Eliminar la geometría Three.js
+            scene.remove(diamond.circle); // Eliminar la geometría del mapa 
 
-          // Aumentar el contador
-          updateDiamondsCounter();
+            // Aumentar el contador
+            updateDiamondsCounter();
+          }
         }
-      }
-    })
+      })
 
 
-    decrementTime()
+      decrementTime()
+    }
+
+    prisoner.update(mixerUpdateDelta);
+
+    // Verificar si se han recogido todos los diamantes
+    if (win && diamonds.length === 0) {
+      scene.remove(prison.prison);
+      moveCameraToCenter(); // Mover la cámara cuando se recogen todos los diamantes
+      prisoner.release();
+      document.getElementById('winText').style.display = 'block'; // Mostrar el texto de "Ganaste"
+    }
+    // Actualizar controles de órbita para la cámara de tercera persona
+
+    orbitControls.update();
+    // Renderizar escena con la cámara en tercera persona (pantalla completa)
+    renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);  // Vista completa
+    renderer.setScissorTest(false);  // Desactivar scissor para la vista principal
+    renderer.render(scene, camera);
+
+    // Mapa
+    const insetWidth = window.innerWidth / 4;  // Ancho del mini-mapa
+    const insetHeight = window.innerHeight / 4;  // Alto del mini-mapa
+    const borderSize = 3;  // Tamaño del borde en píxeles
+
+    // Paso 1: Renderizar el borde negro antes de renderizar la cámara ortográfica
+    renderer.setViewport(window.innerWidth - insetWidth - borderSize - 10, 10 - borderSize, insetWidth + 2 * borderSize, insetHeight + 2 * borderSize);
+    renderer.setScissor(window.innerWidth - insetWidth - borderSize - 10, 10 - borderSize, insetWidth + 2 * borderSize, insetHeight + 2 * borderSize);
+    renderer.setScissorTest(true);
+    renderer.setClearColor(0x000000);  // Color del borde (negro)
+    renderer.clear();  // Limpiar esa área con el color del borde
+
+    // Paso 2: Renderizar la cámara ortográfica dentro del borde negro
+    renderer.setViewport(window.innerWidth - insetWidth - 10, 10, insetWidth, insetHeight);
+    renderer.setScissor(window.innerWidth - insetWidth - 10, 10, insetWidth, insetHeight);
+    renderer.setScissorTest(true);
+    renderer.setClearColor(0x87CEEB);  // Color del cielo o fondo
+    renderer.clear();  // Limpiar la zona interna del mini-mapa
+
+    // Finalmente renderizamos la escena desde la cámara ortográfica (mini-mapa)
+    renderer.render(scene, cameraTop);
+
+
+    // Debugging de cannon js
+    if (import.meta.env.VITE_CANNON_DEBUGGER_ENABLED == 'true') {
+      cannonDebugger.update();
+    }
+
+    stats.end(); // Termina la medición del rendimiento
+
   }
-
-  prisoner.update(mixerUpdateDelta);
-
-  // Verificar si se han recogido todos los diamantes
-  if (win && diamonds.length === 0) {
-    scene.remove(prison.prison);
-    moveCameraToCenter(); // Mover la cámara cuando se recogen todos los diamantes
-    prisoner.release();
-    document.getElementById('winText').style.display = 'block'; // Mostrar el texto de "Ganaste"
-  }
-  // Actualizar controles de órbita para la cámara de tercera persona
-
-  orbitControls.update();
-  // Renderizar escena con la cámara en tercera persona (pantalla completa)
-  renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);  // Vista completa
-  renderer.setScissorTest(false);  // Desactivar scissor para la vista principal
-  renderer.render(scene, camera);
-
-  // Mapa
-  const insetWidth = window.innerWidth / 4;  // Ancho del mini-mapa
-  const insetHeight = window.innerHeight / 4;  // Alto del mini-mapa
-  const borderSize = 3;  // Tamaño del borde en píxeles
-
-  // Paso 1: Renderizar el borde negro antes de renderizar la cámara ortográfica
-  renderer.setViewport(window.innerWidth - insetWidth - borderSize - 10, 10 - borderSize, insetWidth + 2 * borderSize, insetHeight + 2 * borderSize);
-  renderer.setScissor(window.innerWidth - insetWidth - borderSize - 10, 10 - borderSize, insetWidth + 2 * borderSize, insetHeight + 2 * borderSize);
-  renderer.setScissorTest(true);
-  renderer.setClearColor(0x000000);  // Color del borde (negro)
-  renderer.clear();  // Limpiar esa área con el color del borde
-
-  // Paso 2: Renderizar la cámara ortográfica dentro del borde negro
-  renderer.setViewport(window.innerWidth - insetWidth - 10, 10, insetWidth, insetHeight);
-  renderer.setScissor(window.innerWidth - insetWidth - 10, 10, insetWidth, insetHeight);
-  renderer.setScissorTest(true);
-  renderer.setClearColor(0x87CEEB);  // Color del cielo o fondo
-  renderer.clear();  // Limpiar la zona interna del mini-mapa
-
-  // Finalmente renderizamos la escena desde la cámara ortográfica (mini-mapa)
-  renderer.render(scene, cameraTop);
-
-
-  // Debugging de cannon js
-  if (import.meta.env.VITE_CANNON_DEBUGGER_ENABLED == 'true') {
-    cannonDebugger.update();
-  }
-
-  stats.end(); // Termina la medición del rendimiento
-
 }
 
 function light() {
@@ -383,6 +387,5 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-await init();
-loadScene();
-render();
+init();
+
