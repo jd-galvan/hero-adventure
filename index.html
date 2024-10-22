@@ -37,6 +37,17 @@
       color: black;
       display: none;
     }
+
+    #diamondPrompt {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border: 2px solid black;
+      z-index: 1000;
+    }
   </style>
 </head>
 
@@ -52,6 +63,11 @@
   <div id="gameOverScreen" class="game-over-screen">
     <div>Perdiste</div>
     <div>Presiona Space para volver a jugar</div>
+  </div>
+  <div id="diamondPrompt" style="visibility: hidden;">
+    <label for="diamondCount">Ingresa la cantidad de diamantes (1-30):</label>
+    <input type="number" id="diamondCount" min="1" max="30" value="10" />
+    <button id="submitDiamondCount">Aceptar</button>
   </div>
   <script type="module" src="./src/main.js"></script>
 </body>

@@ -90,15 +90,27 @@ function getRandomBetween(min, max) {
 }
 
 function askForDiamonds() {
-  while (true) {
-    nDiamonds = parseInt(prompt("Shift: Velocidad\nW: Saltar\nSpace: Reajustar la camara\nDesplazamiento: Flechas direccionales\n\nIngresa la cantidad de elementos que deseas en la escena (1-30):"));
-    if (nDiamonds < 1 || nDiamonds > 30) {
-      alert("Ingresa un valor permitido de diamantes (1-30)");
-    } else {
-      break;
-    }
-  }
+  const diamondPrompt = document.getElementById('diamondPrompt');
+  const submitButton = document.getElementById('submitDiamondCount');
+  const diamondCountInput = document.getElementById('diamondCount');
+
+  return new Promise((resolve) => {
+    diamondPrompt.style.visibility = 'visible'; // Mostrar el cuadro de diálogo
+
+    submitButton.addEventListener('click', () => {
+      const diamondCount = parseInt(diamondCountInput.value);
+
+      if (diamondCount >= 1 && diamondCount <= 30) {
+        nDiamonds = diamondCount;
+        diamondPrompt.style.visibility = 'hidden'; // Ocultar el cuadro de diálogo
+        resolve(diamondCount);
+      } else {
+        alert('Ingresa un valor permitido de diamantes (1-30)'); // Usar alert aún está bien, ya que no es frecuente
+      }
+    });
+  });
 }
+
 
 let stats;
 function statsInit() {
@@ -113,8 +125,8 @@ function statsInit() {
   stats.dom.style.transform = 'translateY(-50%)'; // Ajustar para que el punto medio esté alineado
 }
 
-function init() {
-  askForDiamonds();
+async function init() {
+  await askForDiamonds();
   resetTime(nDiamonds);
   statsInit();
 
@@ -209,6 +221,7 @@ function updateDiamondsCounter() {
   // Actualizamos el texto en el div
   diamondsCounter++;
   document.getElementById('counter').innerText = "Diamantes: " + diamondsCounter + " / " + nDiamonds;
+  if (diamondsCounter == nDiamonds) win = true;
 }
 
 function moveCameraToCenter() {
@@ -266,7 +279,6 @@ function render() {
       }
     })
 
-    orbitControls.update();
 
     decrementTime()
   }
@@ -274,8 +286,7 @@ function render() {
   prisoner.update(mixerUpdateDelta);
 
   // Verificar si se han recogido todos los diamantes
-  if (diamonds.length === 0) {
-    win = true;
+  if (win && diamonds.length === 0) {
     scene.remove(prison.prison);
     moveCameraToCenter(); // Mover la cámara cuando se recogen todos los diamantes
     prisoner.release();
@@ -283,6 +294,7 @@ function render() {
   }
   // Actualizar controles de órbita para la cámara de tercera persona
 
+  orbitControls.update();
   // Renderizar escena con la cámara en tercera persona (pantalla completa)
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);  // Vista completa
   renderer.setScissorTest(false);  // Desactivar scissor para la vista principal
@@ -371,6 +383,6 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-init();
+await init();
 loadScene();
 render();
