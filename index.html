@@ -64,10 +64,23 @@
     <div>Perdiste</div>
     <div>Presiona Space para volver a jugar</div>
   </div>
-  <div id="diamondPrompt" style="visibility: hidden;">
-    <label for="diamondCount">Ingresa la cantidad de diamantes (1-30):</label>
-    <input type="number" id="diamondCount" min="1" max="30" value="10" />
-    <button id="submitDiamondCount">Aceptar</button>
+  <div id="diamondPrompt"
+    style="visibility: hidden; text-align: center; background-color: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 10px; width: 300px; margin: 0 auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <h2 style="color: #fff; margin-bottom: 20px;">Hero Adventure</h2>
+    <p style="color: #fff; margin-bottom: 20px;">
+      Recoge todos los diamantes dispersos y rescata a la rehén.
+    </p>
+    <p style="color: #fff; margin-bottom: 20px;"><strong>Controles del juego:</strong></p>
+    <ul style="list-style-type: none; padding: 0; color: #fff; text-align: left;">
+      <li>Moverse: <strong>Flechas direccionales</strong></li>
+      <li>Correr: <strong>Shift</strong></li>
+      <li>Reajustar la cámara: <strong>Space</strong></li>
+      <li>Saltar: <strong>W</strong></li>
+    </ul>
+    <label for="diamondCount" style="color: #fff;">Ingresa la cantidad de diamantes (1-30):</label><br>
+    <input type="number" id="diamondCount" min="1" max="30" value="10" style="margin: 10px;" /><br>
+    <button id="submitDiamondCount"
+      style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">Aceptar</button>
   </div>
   <script type="module" src="./src/main.js"></script>
 </body>
