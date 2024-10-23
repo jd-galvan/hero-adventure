@@ -66,6 +66,7 @@ export class Hero {
         this.model.traverse((object) => {
           if (object.isMesh) {
             object.castShadow = true;
+            object.receiveShadow = true;
             if (object.material.map) {
               object.material.roughness = 0.6;
               object.material.metalness = 0.0;

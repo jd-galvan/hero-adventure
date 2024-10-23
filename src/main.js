@@ -154,6 +154,7 @@ async function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   // OrbitControls: Para la cámara en tercera persona
   orbitControls = new OrbitControls(camera, renderer.domElement);
@@ -168,6 +169,8 @@ async function init() {
 
   // Creando mundo visual
   terrain = new Terrain();
+  terrain.getTerrainSurface().receiveShadow = true;
+
   // Creando mundo fisico
   physicWorld = new CANNON.World();
   physicWorld.gravity.set(0, -9.82, 0);
@@ -337,14 +340,28 @@ function render() {
 }
 
 function light() {
-  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  // Luz ambiental (sin sombras, luz uniforme)
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Baja la intensidad
+  scene.add(ambientLight);
 
+  // Luz direccional (para sombras)
   const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-  dirLight.position.set(0, 100, 0);
-  dirLight.shadow.mapSize.width = 320;
-  dirLight.shadow.mapSize.height = 320;
+  dirLight.position.set(0, 100, 20);
+  dirLight.castShadow = true;
+
+  // Configuración de las sombras
+  dirLight.shadow.mapSize.width = 2048;
+  dirLight.shadow.mapSize.height = 2048;
+  dirLight.shadow.camera.near = 0.5;
+  dirLight.shadow.camera.far = 500;
+  dirLight.shadow.camera.left = -200;
+  dirLight.shadow.camera.right = 200;
+  dirLight.shadow.camera.top = 200;
+  dirLight.shadow.camera.bottom = -200;
+
   scene.add(dirLight);
 }
+
 
 function setupKeyCommands() {
   document.addEventListener('keydown', (event) => {
