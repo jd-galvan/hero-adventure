@@ -30,6 +30,8 @@ export class Diamond {
         this.model = gltf.scene;
         this.model.traverse((object) => {
           if (object.isMesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
             object.material = new THREE.MeshPhysicalMaterial({
               color: 0xffffff,
               metalness: 0.4,         // Sin metalidad

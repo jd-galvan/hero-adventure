@@ -346,7 +346,7 @@ function light() {
 
   // Luz direccional (para sombras)
   const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-  dirLight.position.set(0, 100, 20);
+  dirLight.position.set(0, 100, 0);
   dirLight.castShadow = true;
 
   // Configuración de las sombras
