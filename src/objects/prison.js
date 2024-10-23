@@ -18,10 +18,27 @@ export class Prison {
   }
 
   constructor() {
-    // Crear material para las paredes, piso y barras
-    this.prison = new THREE.Group()
-    const materialSuperficie = new THREE.MeshBasicMaterial({ color: 0x333333, side: THREE.DoubleSide });
-    const materialBarra = new THREE.MeshBasicMaterial({ color: 0x444444 });
+    // Cargar la textura de metal oxidado
+    const textureLoader = new THREE.TextureLoader();
+    const metalOxidadoTexture = textureLoader.load('/textures/metal-oxidado.jpg');
+
+    // Ajustar la repetición de la textura si es necesario
+    metalOxidadoTexture.wrapS = THREE.RepeatWrapping;
+    metalOxidadoTexture.wrapT = THREE.RepeatWrapping;
+    metalOxidadoTexture.repeat.set(2, 2); // Cambia el valor para ajustar el tamaño de la textura
+
+    // Crear material para las paredes, piso y barras con la textura de metal oxidado
+    const materialSuperficie = new THREE.MeshStandardMaterial({
+      map: metalOxidadoTexture, // Aplicar la textura de metal oxidado
+      side: THREE.DoubleSide,
+    });
+
+    const materialBarra = new THREE.MeshStandardMaterial({
+      map: metalOxidadoTexture, // Aplicar la textura de metal oxidado también a las barras
+    });
+
+    // Crear el grupo de la prisión
+    this.prison = new THREE.Group();
 
     // Piso
     const piso = new THREE.Mesh(new THREE.BoxGeometry(this.anchoCelda, this.grosorSuperficie, this.profundidadCelda), materialSuperficie);
@@ -56,6 +73,7 @@ export class Prison {
       this.prison.add(barra4);
     }
 
+    // Crear el cuerpo físico de la prisión
     const physicShape = new CANNON.Box(new CANNON.Vec3(this.anchoCelda / 2, this.altoCelda / 2, this.anchoCelda / 2)); // La mitad del tamaño del cubo en cada eje
     this._prisonBody = new CANNON.Body({
       mass: 0, // Establecer la masa (1 significa que tiene peso)
@@ -64,5 +82,3 @@ export class Prison {
     });
   }
 }
-
-
