@@ -24,7 +24,7 @@ export class Sky {
       return new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide });
     })
 
-    const skyboxGeo = new THREE.BoxGeometry(this.width, this.height, this.depth);
+    const skyboxGeo = new THREE.BoxGeometry(this.width * 2, this.height * 2, this.depth * 2);
     this.skybox = new THREE.Mesh(skyboxGeo, materialArray);
 
     const halfSize = this.width / 2;
