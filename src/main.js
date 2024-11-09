@@ -340,28 +340,31 @@ function render() {
 }
 
 function light() {
-  // Luz ambiental (sin sombras, luz uniforme)
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Baja la intensidad
+  // Luz ambiental
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambientLight);
 
-  // Luz direccional (para sombras)
+  // Luz direccional
   const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-  dirLight.position.set(0, 100, 0);
+  dirLight.position.set(50, 50, -50);
   dirLight.castShadow = true;
 
-  // Configuración de las sombras
-  dirLight.shadow.mapSize.width = 2048;
-  dirLight.shadow.mapSize.height = 2048;
+  // Configuración de la cámara de sombras
+  dirLight.shadow.mapSize.width = 4096;
+  dirLight.shadow.mapSize.height = 4096;
   dirLight.shadow.camera.near = 0.5;
-  dirLight.shadow.camera.far = 500;
+  dirLight.shadow.camera.far = 1000;
   dirLight.shadow.camera.left = -200;
   dirLight.shadow.camera.right = 200;
   dirLight.shadow.camera.top = 200;
   dirLight.shadow.camera.bottom = -200;
 
+  // Ajustes para sombra de alta calidad
+  dirLight.shadow.bias = -0.0005; // Ajuste del bias para evitar que la sombra desaparezca al estar cerca
+  dirLight.shadow.radius = 1;     // Reduce el radio para evitar que la sombra se difumine demasiado
+
   scene.add(dirLight);
 }
-
 
 function setupKeyCommands() {
   document.addEventListener('keydown', (event) => {

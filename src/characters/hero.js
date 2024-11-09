@@ -43,9 +43,9 @@ export class Hero {
   walkVelocity = 2
   waterLevel = -1;
   initialPosition = {
-    x: -155,
+    x: -135,
     y: 1,
-    z: -155
+    z: -135
   }
 
   // Nuevas propiedades para el triángulo
