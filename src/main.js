@@ -261,7 +261,7 @@ function render() {
     requestAnimationFrame(render);
     let mixerUpdateDelta = clock.getDelta();
     // Avanzar la simulación física
-    physicWorld.step(1 / 60, mixerUpdateDelta, 3);
+    physicWorld.step(1 / 30, mixerUpdateDelta, 3);
 
     if (!win) {
 
@@ -350,8 +350,8 @@ function light() {
   dirLight.castShadow = true;
 
   // Configuración de la cámara de sombras
-  dirLight.shadow.mapSize.width = 4096;
-  dirLight.shadow.mapSize.height = 4096;
+  dirLight.shadow.mapSize.width = 8192;
+  dirLight.shadow.mapSize.height = 8192;
   dirLight.shadow.camera.near = 0.5;
   dirLight.shadow.camera.far = 1000;
   dirLight.shadow.camera.left = -200;
@@ -360,8 +360,8 @@ function light() {
   dirLight.shadow.camera.bottom = -200;
 
   // Ajustes para sombra de alta calidad
-  dirLight.shadow.bias = -0.0005; // Ajuste del bias para evitar que la sombra desaparezca al estar cerca
-  dirLight.shadow.radius = 1;     // Reduce el radio para evitar que la sombra se difumine demasiado
+  dirLight.shadow.bias = -0.0001;
+  dirLight.shadow.radius = 2;
 
   scene.add(dirLight);
 }
